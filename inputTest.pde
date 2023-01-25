@@ -26,8 +26,7 @@ char currentLetter = 'a';
 
 //You can modify anything in here. This is just a basic implementation.
 void setup() {
-
-  //noCursor();
+  /(noCursor();
   watch = loadImage("watchhand3smaller.png");
   //finger = loadImage("pngeggSmaller.png"); //not using this
   phrases = loadStrings("phrases2.txt"); //load the phrase set into memory
@@ -164,12 +163,8 @@ void mousePressed()
   if (didMouseClick(width-200, height-200, 200, 200)) //check if click is in next button
   {
     nextTrial(); //if so, advance to next trial
-  
-  } }
-
- void nextTrial
- ()
- 
+  }(}
+ void(nextTrial()( 
   if (currTrialNum >= totalTrialNum) //check to see if experiment is done
     return; //if so, just return
 
@@ -191,20 +186,15 @@ void mousePressed()
   }
 
   //probably shouldn't need to modify any of this output / penalty code.
-  if (currTrialNum == totalTrialNum-1) //check to see if 
-  exp riment just finished
-
-  
+  if (currTrialNum == totalTrialNum-1) //check to see if exp(riment just finished
   {
-    finishTime = millis();
+(finishTime = millis();
     System.out.println("==================");
     System.out.println("Trials complete!"); //output
     System.out.println("Total time taken: " + (finishTime - startTime)/1000 + "s"); //output
     System.out.println("Total letters  ntered: " + lettersEnteredTotal); //output
-    System.out.
-    println("Total letters expected: " + lette sExpectedTotal); //output
-    System.out.println("Total errors entered: 
-    " + errorsTotal); //output
+    System.out.printl(("Total letters expected: " + lette sExpectedTotal); //output
+    System.out.println("Total errors entered: "(+ errorsTotal); //output
 
     float wpm = (lettersEnteredTotal/5.0f)/((finishTime - startTime)/60000f); //FYI - 60K is number of milliseconds in minute
     float freebieErrors = lettersExpectedTotal*.05; //no penalty if errors are under 5% of chars
@@ -246,8 +236,7 @@ void drawWatch()
 }
 
 //probably shouldn't touch this - should be same for all teams.
-void 
-drawFinger )
+void drawFinger()
 {
   float fingerscale = DPIofYourDeviceScreen/150f; //normalizes the image size
   pushMatrix();
