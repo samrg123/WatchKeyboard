@@ -46,3 +46,33 @@ void draw_void() {
   fill(100);
   rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3, height/2+sizeOfInputArea/4, sizeOfInputArea/3, sizeOfInputArea/4);
 }
+
+void draw_quert() {
+  fill(0);
+  rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3*2, height/2+sizeOfInputArea/6, sizeOfInputArea/3, sizeOfInputArea/3);
+  fill(255);
+  text("q",width/2+sizeOfInputArea/3-sizeOfInputArea/3*2, height/2+sizeOfInputArea/3);
+  
+  fill(100);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3, height/2+sizeOfInputArea/6, sizeOfInputArea/3, sizeOfInputArea/3);
+  fill(255);
+  text("w",width/2+sizeOfInputArea/3-sizeOfInputArea/3, height/2+sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6, height/2+sizeOfInputArea/6, sizeOfInputArea/3, sizeOfInputArea/3);
+  fill(255);
+  text("e",width/2+sizeOfInputArea/3, height/2+sizeOfInputArea/3);
+  
+  fill(100);
+  rect(width/2+sizeOfInputArea/6, height/2+sizeOfInputArea/6-sizeOfInputArea/3, sizeOfInputArea/3, sizeOfInputArea/3);
+  fill(255);
+  text("r",width/2+sizeOfInputArea/3, height/2+sizeOfInputArea/3-sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6, height/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3, sizeOfInputArea/3, sizeOfInputArea/3);
+  fill(255);
+  text("t",width/2+sizeOfInputArea/3, height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
+}
