@@ -126,3 +126,33 @@ void draw_hjkl() {
   fill(255);
   text("h",width/2+sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
 }
+
+void draw_yuiop() {
+  fill(0);
+  rect(width/2-sizeOfInputArea/2,height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6,height/2+sizeOfInputArea/6,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("p",width/2+sizeOfInputArea/3,height/2+sizeOfInputArea/3);
+  
+  fill(100);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3,height/2+sizeOfInputArea/6,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("o",width/2+sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/6,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("i",width/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3);
+  
+  fill(100);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/6-sizeOfInputArea/3,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("u",width/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("y",width/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
+}
