@@ -187,3 +187,27 @@ void draw_asdfg() {
   text("a",width/2+sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
 }
 
+void draw_bnm() {
+  fill(0);
+  rect(width/2-sizeOfInputArea/2,height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("b",width/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
+  
+  fill(100);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3,height/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("n",width/2+sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6,height/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,sizeOfInputArea/3,sizeOfInputArea/3);
+  fill(255);
+  text("m",width/2+sizeOfInputArea/3,height/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3,height/2-sizeOfInputArea/6+sizeOfInputArea/3,sizeOfInputArea/3*2,sizeOfInputArea/3);
+  fill(255);
+  text("space",width/2+sizeOfInputArea/3-sizeOfInputArea/3-sizeOfInputArea/3,height/2+sizeOfInputArea/3);
+}
