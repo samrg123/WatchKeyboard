@@ -41,14 +41,56 @@ class App {
 
         Buttons.add(
             new CircleButton() {
+                
+                private final PVector kDefaultPosition = new PVector(.5*width, .5*height);
+                private final color kActiveColor = color(0, 255, 0, 100);
+                private final color kInactiveColor = color(255, 0, 0, 100);
+
+                private final float kActiveRadius = 150;
+                private final float kInactiveRadius = 100;
+
                 {
-                    center = new PVector(.5*width, .5*height);
-                    radius = 500;
-                    fillColor = color(0, 255, 0, 100);
+                    center = new PVector(kDefaultPosition.x, kDefaultPosition.y);
+                    radius = kInactiveRadius;
+                    fillColor = kInactiveColor;
                 }
+                
+                private void moveToMouse() {
+                    center.x = mouseX;
+                    center.y = mouseY;
+                }
+
+                private void activateButton() {
+                    fillColor = kActiveColor;
+                    radius = kActiveRadius;
+                    moveToMouse();
+                }
+
+                private void deactivateButton() {
+                    fillColor = kInactiveColor;
+                    radius = kInactiveRadius;
+                    center.set(kDefaultPosition);
+                }
+
                 public void onMouseDown() {
-                    println("Hello | radius: "+ radius+ " | state: "+state);
+                    activateButton();
                 }
+
+                public void onMouseUp() {
+                    deactivateButton();
+                }
+
+                public void onMouseEnter() {
+                    activateButton();
+                }
+
+                public void onMouseExit() {
+                    moveToMouse();
+                }
+                
+                public void onMouseDrag() {
+                    moveToMouse();
+                }   
             }
         );
 
@@ -58,7 +100,10 @@ class App {
 
     private void drawWatchGui() {
 
+        pushMatrix();
+        resetMatrix();
         Buttons.draw();
+        popMatrix();
     }
 
     public void update() {
