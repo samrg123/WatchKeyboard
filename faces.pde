@@ -38,13 +38,34 @@ void draw_void() {
   rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea);
   
   fill(100);
-  rect(width/2+sizeOfInputArea/6, height/2+sizeOfInputArea/4, sizeOfInputArea/3, sizeOfInputArea/4);
-  
+  rect(width/2-sizeOfInputArea/2, height/2+sizeOfInputArea/4, sizeOfInputArea/2, sizeOfInputArea/4);
   fill(255);
-  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3, height/2+sizeOfInputArea/4, sizeOfInputArea/3, sizeOfInputArea/4);
+  text("space", width/2-sizeOfInputArea/16*6, height/2+sizeOfInputArea/32*13);
+  
+  fill(0,0,255);
+  rect(width/2,height/2+sizeOfInputArea/4,sizeOfInputArea/2, sizeOfInputArea/4);
+  fill(255);
+  text("<-", width/2 + sizeOfInputArea/16*3, height/2+sizeOfInputArea/32*13);
+}
+
+void draw_void_no_text_entry() {
+  fill(0, 0, 0);
+  rect(width/2-sizeOfInputArea/2, height/2-sizeOfInputArea/2, sizeOfInputArea, sizeOfInputArea);
   
   fill(100);
-  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3-sizeOfInputArea/3, height/2+sizeOfInputArea/4, sizeOfInputArea/3, sizeOfInputArea/4);
+  rect(width/2-sizeOfInputArea/2, height/2+sizeOfInputArea/4-sizeOfInputArea/16*2, sizeOfInputArea/2, sizeOfInputArea/4);
+  fill(255);
+  text("space", width/2-sizeOfInputArea/16*6, height/2+sizeOfInputArea/32*9);
+  
+  fill(0,0,255);
+  rect(width/2,height/2+sizeOfInputArea/4-sizeOfInputArea/8,sizeOfInputArea/2, sizeOfInputArea/4);
+  fill(255);
+  text("<-", width/2 + sizeOfInputArea/16*3, height/2+sizeOfInputArea/32*9);
+  
+  fill(255,0,0);
+  rect(width/2+sizeOfInputArea/6-sizeOfInputArea/3*2, height/2+sizeOfInputArea/16*6, sizeOfInputArea, sizeOfInputArea/8);
+  fill(255);
+  text("suggestion", width/2-sizeOfInputArea/2, height/2+sizeOfInputArea/32*15);
 }
 
 void draw_quert() {
