@@ -1,3 +1,5 @@
+float sizeOfInputArea = 138 * (570/138.);
+
 /**
   draws a 2 x 2 grid
 */
