@@ -17,9 +17,22 @@ class App {
     private BenchmarkResults benchmarkResults;
         
     private final int kDPIofYourDeviceScreen = 570;
+    private final int kWatchScreenSize = 138;
+    private final float kWatchPixelScale = float(kDPIofYourDeviceScreen)/kWatchScreenSize;
+
+    private final Rectangle kWatchScreenBounds;
 
     public App() {
         
+        // Init kWatchScreenBounds
+        float halfWidth = .5 * width;
+        float halfHeight = .5 * height;
+        float halfWatchScreen = .5 * kWatchPixelScale*kWatchScreenSize;
+        kWatchScreenBounds = new Rectangle(
+            halfWidth  - halfWatchScreen, halfWidth  + halfWatchScreen,
+            halfHeight - halfWatchScreen, halfHeight + halfWatchScreen
+        );
+
         // Load font 
         font = createFont("NotoSans-Regular.ttf", 14 * displayDensity);
         textFont(font); //set the font to Noto Sans 14 pt. Creating fonts is expensive, so make difference sizes once in setup, not draw
@@ -54,10 +67,10 @@ class App {
                     radius = kInactiveRadius;
                     fillColor = kInactiveColor;
                 }
-                
+
                 private void moveToMouse() {
-                    center.x = mouseX;
-                    center.y = mouseY;
+                    center.x = clamp(mouseX, kWatchScreenBounds.x1, kWatchScreenBounds.x2);
+                    center.y = clamp(mouseY, kWatchScreenBounds.y1, kWatchScreenBounds.y2);
                 }
 
                 private void activateButton() {
@@ -85,12 +98,20 @@ class App {
                 }
 
                 public void onMouseExit() {
-                    moveToMouse();
+
+                    if(kWatchScreenBounds.inBounds(mouseX, mouseY)) {
+                        
+                        //Note: This can happen on fast movements
+                        moveToMouse();
+
+                    } else {
+                        deactivateButton();
+                    }
                 }
                 
                 public void onMouseDrag() {
                     moveToMouse();
-                }   
+                }
             }
         );
 
@@ -123,18 +144,19 @@ class App {
 
     private void drawWatch() {
 
+        // Note: We draw GUI first so elements drawn off watch screen get
+        //       covered up
+        drawWatchGui();
+
         pushMatrix();
-        float watchscale = kDPIofYourDeviceScreen/138.0; //normalizes the image size
-        
+
         // Draw watch background image
         translate(width/2, height/2);
-        scale(watchscale);
+        scale(kWatchPixelScale);
         imageMode(CENTER);
         image(watch, 0, 0);
         
         popMatrix();    
-
-        drawWatchGui();
     }
 
     public void draw() {
