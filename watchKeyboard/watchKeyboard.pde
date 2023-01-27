@@ -121,10 +121,10 @@ class App {
 
     private void drawWatchGui() {
 
-        pushMatrix();
-        resetMatrix();
         Buttons.draw();
-        popMatrix();
+        // TODO: draw text fields
+        // TODO: draw cursor
+
     }
 
     public void update() {
@@ -134,7 +134,6 @@ class App {
             state = State.RUNNING;
         }
 
-        //TODO: FOR each button process input
         //TODO: blink cursor!
     }
 
@@ -144,8 +143,7 @@ class App {
 
     private void drawWatch() {
 
-        // Note: We draw GUI first so elements drawn off watch screen get
-        //       covered up
+        // Note: We draw GUI first so elements drawn off watch screen get covered up
         drawWatchGui();
 
         pushMatrix();
