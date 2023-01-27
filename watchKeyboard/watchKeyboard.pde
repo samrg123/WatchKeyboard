@@ -29,8 +29,8 @@ class App {
         float halfHeight = .5 * height;
         float halfWatchScreen = .5 * kWatchPixelScale*kWatchScreenSize;
         kWatchScreenBounds = new Rectangle(
-            halfWidth  - halfWatchScreen, halfWidth  + halfWatchScreen,
-            halfHeight - halfWatchScreen, halfHeight + halfWatchScreen
+            halfWidth  - halfWatchScreen, halfHeight - halfWatchScreen,
+            halfWidth  + halfWatchScreen, halfHeight + halfWatchScreen
         );
 
         // Load font 
@@ -52,74 +52,134 @@ class App {
 
     private void createWatchGUI() {
 
-        Buttons.add(
-            new CircleButton() {
+        float overscan = 100;
+        
+        Rectangle triangleButtonBounds = new Rectangle(
+            kWatchScreenBounds.x1 - overscan, kWatchScreenBounds.y1, 
+            kWatchScreenBounds.x2 + overscan, kWatchScreenBounds.y2 
+        );
+
+        PVector triangleButtonCenter = triangleButtonBounds.center();
+
+        Buttons.add(new TriangleButton() {
+            {
+                vertices = new Triangle(
+                    triangleButtonBounds.x1, triangleButtonBounds.y1,
+                    triangleButtonCenter.x,  triangleButtonBounds.y1,
+                    triangleButtonCenter.x,  triangleButtonCenter.y
+                );
+            }
+
+            // TODO: Move this stuff into Button.... resuse code for circle button
+            private final color kActiveFillColor   = color(234, 85, 20); //orange
+            private final color kInactiveFillColor = color(0, 0, 0);     //black 
+            
+            private final color kActiveTextColor   = color(255, 255, 255); //white 
+            private final color kInactiveTextColor = color( 58,  58,  58); //dark grey 
+
+            // TODO: Move this into textbox?
+            private String text = "QWERT";
+            private color textColor = kInactiveTextColor;
+
+            private void activate() {
+                fillColor = kActiveFillColor;
+                textColor = kActiveTextColor;
+            }
+
+            private void deactivate() {
+                fillColor = kInactiveFillColor;
+                textColor = kInactiveTextColor;                
+            }            
+
+            public void onMouseDown() {
+                activate();
+            }
+
+            public void onMouseEnter() {
+                activate();
+            }
+
+            public void onMouseUp() {
+                deactivate();
+            }
+
+            public void onMouseExit() {
+                deactivate();
+
+            }
+        });
+
+        Buttons.add(new CircleButton() {
                 
-                private final PVector kDefaultPosition = new PVector(.5*width, .5*height);
-                private final color kActiveColor = color(0, 255, 0, 100);
-                private final color kInactiveColor = color(255, 0, 0, 100);
+            private final PVector kDefaultPosition = new PVector(.5*width, .5*height);
+            private final color kActiveColor = color(46, 167, 224); //blue
+            private final color kInactiveColor = color(160, 160, 160); //grey
 
-                private final float kActiveRadius = 150;
-                private final float kInactiveRadius = 100;
+            private final float kActiveRadius = 150;
+            private final float kInactiveRadius = 100;
 
-                {
-                    center = new PVector(kDefaultPosition.x, kDefaultPosition.y);
-                    radius = kInactiveRadius;
-                    fillColor = kInactiveColor;
-                }
+            {
+                center = new PVector(kDefaultPosition.x, kDefaultPosition.y);
+                radius = kInactiveRadius;
+                fillColor = kInactiveColor;
+            }
 
-                private void moveToMouse() {
-                    center.x = clamp(mouseX, kWatchScreenBounds.x1, kWatchScreenBounds.x2);
-                    center.y = clamp(mouseY, kWatchScreenBounds.y1, kWatchScreenBounds.y2);
-                }
+            private void moveToMouse() {
+                center.x = clamp(mouseX, kWatchScreenBounds.x1, kWatchScreenBounds.x2);
+                center.y = clamp(mouseY, kWatchScreenBounds.y1, kWatchScreenBounds.y2);
+            }
 
-                private void activateButton() {
-                    fillColor = kActiveColor;
-                    radius = kActiveRadius;
+            private void activate() {
+                fillColor = kActiveColor;
+                radius = kActiveRadius;
+                moveToMouse();
+            }
+
+            private void deactivate() {
+                fillColor = kInactiveColor;
+                radius = kInactiveRadius;
+                center.set(kDefaultPosition);
+            }
+
+            public void onMouseDown() {
+                activate();
+            }
+
+            public void onMouseUp() {
+                deactivate();
+            }
+
+            public void onMouseEnter() {
+                activate();
+            }
+
+            public void onMouseExit() {
+
+                if(kWatchScreenBounds.inBounds(mouseX, mouseY)) {
+                    
+                    //Note: This can happen on fast movements
                     moveToMouse();
-                }
 
-                private void deactivateButton() {
-                    fillColor = kInactiveColor;
-                    radius = kInactiveRadius;
-                    center.set(kDefaultPosition);
-                }
-
-                public void onMouseDown() {
-                    activateButton();
-                }
-
-                public void onMouseUp() {
-                    deactivateButton();
-                }
-
-                public void onMouseEnter() {
-                    activateButton();
-                }
-
-                public void onMouseExit() {
-
-                    if(kWatchScreenBounds.inBounds(mouseX, mouseY)) {
-                        
-                        //Note: This can happen on fast movements
-                        moveToMouse();
-
-                    } else {
-                        deactivateButton();
-                    }
-                }
-                
-                public void onMouseDrag() {
-                    moveToMouse();
+                } else {
+                    deactivate();
                 }
             }
-        );
+            
+            public void onMouseDrag() {
+                moveToMouse();
+            }
+        });
 
         // TODO: add text fields
         // TODO: add buttons
     }
 
     private void drawWatchGui() {
+
+        // draw2x3();
+        // draw_void();
+        // draw_void_no_text_entry();
+        // draw_quert();
 
         Buttons.draw();
         // TODO: draw text fields
