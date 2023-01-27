@@ -10,11 +10,6 @@ class CircleButton extends Button {
         float dx = center.x - x;
         float dy = center.y - y; 
 
-        // println("Center: "+center.x+"|"+center.y+"; "+dx+"|"+dy);
-        println("w: "+pixelWidth+"|"+width+"; "+dx+"|"+dy);
-        // println("Center: "+center.x+"|"+center.y+"; "+x+"|"+y);
-
-
         // distace^2 < radius^2 
         return (dx*dx + dy*dy) <= (radius*radius);
     }
