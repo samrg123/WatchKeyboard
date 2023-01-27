@@ -7,13 +7,21 @@ class CircleButton extends Button {
 
     public boolean inBounds(float x, float y) {
 
-        return x >= (center.x-radius) && y >= (center.y-radius) &&
-               x <= (center.x+radius) && y <= (center.y+radius);
+        float dx = center.x - x;
+        float dy = center.y - y; 
+
+        // println("Center: "+center.x+"|"+center.y+"; "+dx+"|"+dy);
+        println("w: "+pixelWidth+"|"+width+"; "+dx+"|"+dy);
+        // println("Center: "+center.x+"|"+center.y+"; "+x+"|"+y);
+
+
+        // distace^2 < radius^2 
+        return (dx*dx + dy*dy) <= (radius*radius);
     }
 
     public void draw() {
         fill(fillColor);
-        circle(center.x, center.y, radius);
+        circle(center.x, center.y, 2*radius);
     }
 
 }
