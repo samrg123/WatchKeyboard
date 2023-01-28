@@ -143,7 +143,7 @@ class App {
         }});
 
         Buttons.add(new KeyboardButton(
-            "HKL",
+            "HJKL",
             new Triangle(
                 center.x,  center.y,
                 (bounds.x+bounds.width),  bounds.y,
