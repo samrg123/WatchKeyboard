@@ -1,9 +1,7 @@
 class CircleButton extends Button {
 
-    protected PVector center = new PVector(0, 0);
     protected float radius = 100;
-
-    protected color fillColor = color(20, 20, 20, 255);
+    protected PVector center = new PVector(0, 0);
 
     public boolean inBounds(float x, float y) {
 
@@ -15,8 +13,12 @@ class CircleButton extends Button {
     }
 
     public void draw() {
-        fill(fillColor);
+
+        applySettings();
+
         circle(center.x, center.y, 2*radius);
+
+        super.draw();
     }
 
 }

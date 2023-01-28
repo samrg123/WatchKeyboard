@@ -7,6 +7,8 @@ enum State {
     FINISHED,       
 };
 
+final int kDPI = 570;
+
 class App {
 
     private PImage watch;
@@ -16,21 +18,18 @@ class App {
     private Phrases phrases;
     private BenchmarkResults benchmarkResults;
         
-    private final int kDPIofYourDeviceScreen = 570;
-    private final int kWatchScreenSize = 138;
-    private final float kWatchPixelScale = float(kDPIofYourDeviceScreen)/kWatchScreenSize;
+    private final int kWatchScreenSize = 140;
+    private final float kWatchPixelScale = float(kDPI)/kWatchScreenSize;
 
     private final Rectangle kWatchScreenBounds;
 
     public App() {
         
         // Init kWatchScreenBounds
-        float halfWidth = .5 * width;
-        float halfHeight = .5 * height;
-        float halfWatchScreen = .5 * kWatchPixelScale*kWatchScreenSize;
+        float watchScreenPixels = kWatchPixelScale*kWatchScreenSize;
         kWatchScreenBounds = new Rectangle(
-            halfWidth  - halfWatchScreen, halfHeight - halfWatchScreen,
-            halfWidth  + halfWatchScreen, halfHeight + halfWatchScreen
+            .5 * (width - watchScreenPixels), .5 * (height - watchScreenPixels),
+            watchScreenPixels, watchScreenPixels
         );
 
         // Load font 
@@ -50,103 +49,182 @@ class App {
         createWatchGUI();
     }
 
-    private void createWatchGUI() {
+    private void createKeyboardButtons() {
 
-        float overscan = 100;
-        
-        Rectangle triangleButtonBounds = new Rectangle(
-            kWatchScreenBounds.x1 - overscan, kWatchScreenBounds.y1, 
-            kWatchScreenBounds.x2 + overscan, kWatchScreenBounds.y2 
-        );
+        class KeyboardButton extends TriangleButton {
 
-        PVector triangleButtonCenter = triangleButtonBounds.center();
+            public KeyboardButton(String letters, Triangle vertices, Rectangle textboxBounds) {
 
-        Buttons.add(new TriangleButton() {
-            {
-                vertices = new Triangle(
-                    triangleButtonBounds.x1, triangleButtonBounds.y1,
-                    triangleButtonCenter.x,  triangleButtonBounds.y1,
-                    triangleButtonCenter.x,  triangleButtonCenter.y
-                );
-            }
+                activeSettings = new Settings() {{
+                    fillColor = color(234,  85,  20); //orange
+                    fontColor = color(255, 255, 255); //white
+                }};
 
-            // TODO: Move this stuff into Button.... resuse code for circle button
-            private final color kActiveFillColor   = color(234, 85, 20); //orange
-            private final color kInactiveFillColor = color(0, 0, 0);     //black 
-            
-            private final color kActiveTextColor   = color(255, 255, 255); //white 
-            private final color kInactiveTextColor = color( 58,  58,  58); //dark grey 
+                inactiveSettings = new Settings() {{
+                    fillColor = color(  0,   0,   0); //black
+                    fontColor = color( 58,  58,  58); //dark grey
+                }};
 
-            // TODO: Move this into textbox?
-            private String text = "QWERT";
-            private color textColor = kInactiveTextColor;
+                this.vertices = vertices;
+                
+                textbox = new Textbox(textboxBounds) {{
+       
+                    str = letters;
 
-            private void activate() {
-                fillColor = kActiveFillColor;
-                textColor = kActiveTextColor;
-            }
-
-            private void deactivate() {
-                fillColor = kInactiveFillColor;
-                textColor = kInactiveTextColor;                
-            }            
-
-            public void onMouseDown() {
-                activate();
+                    wordwrap = true;
+                    alignment = CENTER;
+                    backgroundColor = color(0,0,0,0); //transparent
+                    
+                    setPadding(20);
+                }};
             }
 
             public void onMouseEnter() {
                 activate();
             }
 
-            public void onMouseUp() {
-                deactivate();
-            }
-
             public void onMouseExit() {
                 deactivate();
-
             }
-        });
 
+        };
+
+        float overScan = 100;        
+        Rectangle bounds = new Rectangle(
+            kWatchScreenBounds.x - overScan, kWatchScreenBounds.y, 
+            kWatchScreenBounds.width + 2*overScan, kWatchScreenBounds.height 
+        );
+
+        PVector halfWatchScreenSize = new PVector(.5*kWatchScreenBounds.width, .5*kWatchScreenBounds.height);
+        PVector center = bounds.center();
+
+        Buttons.add(new KeyboardButton(
+            "QWERT",
+            new Triangle(
+                bounds.x,  bounds.y,
+                center.x,  bounds.y,
+                center.x,  center.y
+            ),
+            new Rectangle(
+                kWatchScreenBounds.x, kWatchScreenBounds.y,
+                halfWatchScreenSize.x, halfWatchScreenSize.y 
+            )
+        ));
+
+        Buttons.add(new KeyboardButton(
+            "YUIOP",
+            new Triangle(
+                center.x,  bounds.y,
+                (bounds.x+bounds.width),  bounds.y,
+                center.x,  center.y
+            ),
+            new Rectangle(
+                center.x, bounds.y,
+                halfWatchScreenSize.x, halfWatchScreenSize.y 
+            )
+        ));
+
+
+        // TODO: Make triangleButton use Triangle Textbox
+        //       so that text wraps properly!
+        Buttons.add(new KeyboardButton(
+            "ASDFG",
+            new Triangle(
+                center.x,  center.y,
+                bounds.x,  bounds.y,
+                bounds.x,  (bounds.y+bounds.height)
+            ),
+            new Rectangle(
+                kWatchScreenBounds.x, kWatchScreenBounds.y + 150,
+                halfWatchScreenSize.x - 150, kWatchScreenBounds.height - 300 
+            )
+        ){{
+            // textbox.backgroundColor = color(255,0,0,255);
+        }});
+
+        Buttons.add(new KeyboardButton(
+            "HKL",
+            new Triangle(
+                center.x,  center.y,
+                (bounds.x+bounds.width),  bounds.y,
+                (bounds.x+bounds.width),  (bounds.y+bounds.height)
+            ),
+            new Rectangle(
+                center.x + 160, kWatchScreenBounds.y + 150,
+                halfWatchScreenSize.x - 160, kWatchScreenBounds.height - 300
+            )
+        ){{
+            // textbox.backgroundColor = color(255,0,0,255);
+        }});        
+        
+
+        Buttons.add(new KeyboardButton(
+            "ZXCV",
+            new Triangle(
+                center.x,  center.y,
+                bounds.x,  (bounds.y+bounds.height),
+                center.x,  (bounds.y+bounds.height)
+            ),
+            new Rectangle(
+                kWatchScreenBounds.x, (bounds.y+bounds.height)-100,
+                halfWatchScreenSize.x, 100 
+            )
+        ){{
+            // textbox.backgroundColor = color(255,0,0,255);
+        }});
+
+        Buttons.add(new KeyboardButton(
+            "BNM",
+            new Triangle(
+                center.x,  center.y,
+                center.x,  (bounds.y+bounds.height),
+                (bounds.x+bounds.width),  (bounds.y+bounds.height)
+            ),
+            new Rectangle(
+                center.x, (bounds.y+bounds.height)-100,
+                halfWatchScreenSize.x, 100 
+            )
+        ){{
+            // textbox.backgroundColor = color(255,0,0,255);
+        }});        
+
+    }
+
+    private void createWatchGUI() {
+
+        createKeyboardButtons();
+
+        // TODO: Make this a special rectangular button the size of the screen
+        //       that draws circle to follow finger.... This way we can span to
+        //       anywhere the user touches on screen, not just the circle area.
         Buttons.add(new CircleButton() {
-                
-            private final PVector kDefaultPosition = new PVector(.5*width, .5*height);
-            private final color kActiveColor = color(46, 167, 224); //blue
-            private final color kInactiveColor = color(160, 160, 160); //grey
+            {    
+                activeSettings = new Settings(){{
+                    fillColor = color( 46, 167, 224, .5*255); //transparent blue
+                }};
 
-            private final float kActiveRadius = 150;
-            private final float kInactiveRadius = 100;
-
-            {
-                center = new PVector(kDefaultPosition.x, kDefaultPosition.y);
-                radius = kInactiveRadius;
-                fillColor = kInactiveColor;
+                inactiveSettings = new Settings(){{
+                    fillColor = color(160, 160, 160); //grey
+                }};
             }
 
-            private void moveToMouse() {
-                center.x = clamp(mouseX, kWatchScreenBounds.x1, kWatchScreenBounds.x2);
-                center.y = clamp(mouseY, kWatchScreenBounds.y1, kWatchScreenBounds.y2);
+            protected void moveToMouse() {
+                center.x = clamp(mouseX, kWatchScreenBounds.x, kWatchScreenBounds.x + kWatchScreenBounds.width);
+                center.y = clamp(mouseY, kWatchScreenBounds.y, kWatchScreenBounds.y + kWatchScreenBounds.height);
             }
 
-            private void activate() {
-                fillColor = kActiveColor;
-                radius = kActiveRadius;
+            public void activate() {
+                super.activate();
+
+                radius = 150;
                 moveToMouse();
             }
 
-            private void deactivate() {
-                fillColor = kInactiveColor;
-                radius = kInactiveRadius;
-                center.set(kDefaultPosition);
-            }
+            public void deactivate() {
+                super.deactivate();
 
-            public void onMouseDown() {
-                activate();
-            }
-
-            public void onMouseUp() {
-                deactivate();
+                radius = 100;
+                center.set(kWatchScreenBounds.center());
             }
 
             public void onMouseEnter() {
