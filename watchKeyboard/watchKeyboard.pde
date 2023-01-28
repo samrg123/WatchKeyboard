@@ -1,10 +1,16 @@
 
+import java.util.Vector;
+
 // Note: This is dumb, but processing wraps our App code in a
 //       wrapper "watchKeyboard" class so we can't have nested classes/enums
 enum State {
     INIT,
-    RUNNING,
-    FINISHED,       
+
+    IDLE,
+    KEYBOARD,
+    SELECT_LETTER,
+
+    FINISHED,
 };
 
 final int kDPI = 570;
@@ -18,10 +24,16 @@ class App {
     private Phrases phrases;
     private BenchmarkResults benchmarkResults;
         
-    private final int kWatchScreenSize = 140;
+    private final int kWatchScreenSize = 144;
     private final float kWatchPixelScale = float(kDPI)/kWatchScreenSize;
 
     private final Rectangle kWatchScreenBounds;
+
+    private Button circleButton;
+    private Vector<Button> keyboardButtons;
+    private Vector<Button> idleButtons;
+
+    private Textbox textInput;
 
     public App() {
         
@@ -45,8 +57,21 @@ class App {
         benchmarkResults = new BenchmarkResults();
 
         // Init watch
-        state = State.INIT;
         createWatchGUI();
+        setState(State.INIT);
+    }
+
+    private void createTextInput() {
+        
+        textInput = new Textbox(kWatchScreenBounds) {{
+
+            str = "Hello World";
+
+            fontColor       = color(255, 255, 255, 255); //white
+            backgroundColor = color(  0,   0,   0, 255); //black
+
+            setPadding(20);
+        }};
     }
 
     private void createKeyboardButtons() {
@@ -98,7 +123,8 @@ class App {
         PVector halfWatchScreenSize = new PVector(.5*kWatchScreenBounds.width, .5*kWatchScreenBounds.height);
         PVector center = bounds.center();
 
-        Buttons.add(new KeyboardButton(
+        keyboardButtons = new Vector<Button>();
+        keyboardButtons.add(new KeyboardButton(
             "QWERT",
             new Triangle(
                 bounds.x,  bounds.y,
@@ -111,7 +137,7 @@ class App {
             )
         ));
 
-        Buttons.add(new KeyboardButton(
+        keyboardButtons.add(new KeyboardButton(
             "YUIOP",
             new Triangle(
                 center.x,  bounds.y,
@@ -127,7 +153,7 @@ class App {
 
         // TODO: Make triangleButton use Triangle Textbox
         //       so that text wraps properly!
-        Buttons.add(new KeyboardButton(
+        keyboardButtons.add(new KeyboardButton(
             "ASDFG",
             new Triangle(
                 center.x,  center.y,
@@ -142,7 +168,7 @@ class App {
             // textbox.backgroundColor = color(255,0,0,255);
         }});
 
-        Buttons.add(new KeyboardButton(
+        keyboardButtons.add(new KeyboardButton(
             "HJKL",
             new Triangle(
                 center.x,  center.y,
@@ -158,7 +184,7 @@ class App {
         }});        
         
 
-        Buttons.add(new KeyboardButton(
+        keyboardButtons.add(new KeyboardButton(
             "ZXCV",
             new Triangle(
                 center.x,  center.y,
@@ -173,7 +199,7 @@ class App {
             // textbox.backgroundColor = color(255,0,0,255);
         }});
 
-        Buttons.add(new KeyboardButton(
+        keyboardButtons.add(new KeyboardButton(
             "BNM",
             new Triangle(
                 center.x,  center.y,
@@ -190,14 +216,12 @@ class App {
 
     }
 
-    private void createWatchGUI() {
-
-        createKeyboardButtons();
-
+    private void createCircleButton() {
+       
         // TODO: Make this a special rectangular button the size of the screen
         //       that draws circle to follow finger.... This way we can span to
         //       anywhere the user touches on screen, not just the circle area.
-        Buttons.add(new CircleButton() {
+        circleButton = new CircleButton() {
             {    
                 activeSettings = new Settings(){{
                     fillColor = color( 46, 167, 224, .5*255); //transparent blue
@@ -218,6 +242,8 @@ class App {
 
                 radius = 150;
                 moveToMouse();
+            
+                setState(State.KEYBOARD);
             }
 
             public void deactivate() {
@@ -225,6 +251,8 @@ class App {
 
                 radius = 100;
                 center.set(kWatchScreenBounds.center());
+                
+                setState(State.IDLE);
             }
 
             public void onMouseEnter() {
@@ -246,10 +274,19 @@ class App {
             public void onMouseDrag() {
                 moveToMouse();
             }
-        });
+        };
+    }
 
-        // TODO: add text fields
-        // TODO: add buttons
+    private void createWatchGUI() {
+
+        createTextInput();
+        
+        createCircleButton();
+
+        createKeyboardButtons();
+
+        //TODO: add space/backspace buttons!
+        idleButtons = new Vector<Button>();
     }
 
     private void drawWatchGui() {
@@ -259,19 +296,59 @@ class App {
         // draw_void_no_text_entry();
         // draw_quert();
 
+        textInput.draw();
         Buttons.draw();
+
         // TODO: draw text fields
         // TODO: draw cursor
 
+    }
+
+    private void setState(State newState) {
+        
+        switch(newState) {
+
+            case INIT: {
+
+                state = State.INIT;
+                Buttons.clear();
+                Buttons.addAll(keyboardButtons);
+                Buttons.add(circleButton);
+                Buttons.addAll(idleButtons);
+
+            } break;
+
+            case IDLE: {
+
+                state = State.IDLE;
+                circleButton.enabled = true;
+                for(Button b : idleButtons) b.enabled = true;
+                for(Button b : keyboardButtons) b.enabled = false;
+ 
+            } break;
+
+            case KEYBOARD: {
+                
+                state = State.KEYBOARD;
+                circleButton.enabled = true;
+                for(Button b : idleButtons) b.enabled = false;
+                for(Button b : keyboardButtons) b.enabled = true;
+
+            } break;
+
+            default: {
+                assert(false);
+            } break;
+        }
     }
 
     public void update() {
 
         if(state == State.INIT) {
             benchmarkResults.startTime = millis();
-            state = State.RUNNING;
+            setState(State.IDLE);
         }
-
+        
         //TODO: blink cursor!
     }
 
