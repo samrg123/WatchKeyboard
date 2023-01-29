@@ -12,6 +12,17 @@ class Rectangle {
         this.height = height;
     }
 
+    public Rectangle(Rectangle r) {
+        this(r.x, r.y, r.width, r.height);
+    }
+
+    public void set(Rectangle r) {
+        x = r.x;
+        y = r.y;
+        width = r.width;
+        height = r.height;
+    }
+
     public PVector center() {
         return new PVector(x + .5*width, y + .5*height);
     }
