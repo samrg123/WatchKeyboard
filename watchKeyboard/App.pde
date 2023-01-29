@@ -171,9 +171,9 @@ class App {
             ),
 
             new String[][] {
-                {"H" , "J", ""}, 
-                {"BS", "" , ""}, 
-                {"K" , "L", ""},
+                {"H", "J", ""}, 
+                {"" , "" , ""}, 
+                {"K", "L", ""},
             }            
         ));        
         
@@ -212,7 +212,7 @@ class App {
             new String[][] {
                 {"N" , "M", ""}, 
                 {"B" , "" , ""}, 
-                {"SP", "" , ""},
+                {""  , "" , ""},
             }
         ));        
 
@@ -408,9 +408,11 @@ class App {
             return;
         }
 
+        textLeading(50);
+
         drawWatch();
         phrases.draw(
-            "DPI:   " + kDPI +
+            "DPI:   " + Math.round(kDPI) + " | " +
             "State: " + String.valueOf(state)
         );
     }
