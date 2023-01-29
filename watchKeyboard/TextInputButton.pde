@@ -12,7 +12,7 @@ class TextInputButton extends TextboxButton {
     
         this.inputText = inputText;
         this.inputField = inputField;
-    }
+}
 
     public void onMouseUp() {
         if(!isActive()) return;
