@@ -31,7 +31,7 @@ class Phrases {
         currentIndex = (++currentIndex) % numTrials;
     }
 
-    public void draw() {
+    public void draw(String debug_text) {
 
         translate(0, 0);        
         textAlign(LEFT);
@@ -43,6 +43,9 @@ class Phrases {
         //draw the target string
         fill(128);
         text("Target:   " + currentPhrase(), 70, 100);
+
+        fill(128);
+        text(debug_text, 70, 150);
     }
 
 }

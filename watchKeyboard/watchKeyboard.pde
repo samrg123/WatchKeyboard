@@ -1,6 +1,12 @@
 
 import java.util.Vector;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.Vibrator;
+
+Activity act;
+
 // Note: This is dumb, but processing wraps our App code in a
 //       wrapper "watchKeyboard" class so we can't have nested classes/enums
 enum State {
@@ -13,7 +19,7 @@ enum State {
     FINISHED,
 };
 
-final int kDPI = 570;
+final int kDPI = 403;
 
 class App {
 
@@ -27,11 +33,17 @@ class App {
     private final int kWatchScreenSize = 144;
     private final float kWatchPixelScale = float(kDPI)/kWatchScreenSize;
 
+    private final float deadzoneRatio = 0.8;
+    private int deadzone;
+
+
     private final Rectangle kWatchScreenBounds;
 
     private Button circleButton;
     private Vector<Button> keyboardButtons;
     private Vector<Button> idleButtons;
+    private Face face;
+    private int faceID = 0;
 
     private Textbox textInput;
 
@@ -43,6 +55,8 @@ class App {
             .5 * (width - watchScreenPixels), .5 * (height - watchScreenPixels),
             watchScreenPixels, watchScreenPixels
         );
+
+        deadzone = int(deadzoneRatio * kWatchScreenBounds.width / 2);
 
         // Load font 
         font = createFont("NotoSans-Regular.ttf", 14 * displayDensity);
@@ -65,7 +79,7 @@ class App {
         
         textInput = new Textbox(kWatchScreenBounds) {{
 
-            str = "Hello World";
+            str = "";
 
             fontColor       = color(255, 255, 255, 255); //white
             backgroundColor = color(  0,   0,   0, 255); //black
@@ -105,7 +119,7 @@ class App {
             }
 
             public void onMouseEnter() {
-                activate();
+                //activate();
             }
 
             public void onMouseExit() {
@@ -135,7 +149,16 @@ class App {
                 kWatchScreenBounds.x, kWatchScreenBounds.y,
                 halfWatchScreenSize.x, halfWatchScreenSize.y 
             )
-        ));
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 0;
+                    super.deactivate();
+                }
+            }
+        });
 
         keyboardButtons.add(new KeyboardButton(
             "YUIOP",
@@ -148,7 +171,16 @@ class App {
                 center.x, bounds.y,
                 halfWatchScreenSize.x, halfWatchScreenSize.y 
             )
-        ));
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 1;
+                    super.deactivate();
+                }
+            }
+        });
 
 
         // TODO: Make triangleButton use Triangle Textbox
@@ -164,9 +196,16 @@ class App {
                 kWatchScreenBounds.x, kWatchScreenBounds.y + 150,
                 halfWatchScreenSize.x - 150, kWatchScreenBounds.height - 300 
             )
-        ){{
-            // textbox.backgroundColor = color(255,0,0,255);
-        }});
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 2;
+                    super.deactivate();
+                }
+            }
+        });
 
         keyboardButtons.add(new KeyboardButton(
             "HJKL",
@@ -179,9 +218,16 @@ class App {
                 center.x + 160, kWatchScreenBounds.y + 150,
                 halfWatchScreenSize.x - 160, kWatchScreenBounds.height - 300
             )
-        ){{
-            // textbox.backgroundColor = color(255,0,0,255);
-        }});        
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 3;
+                    super.deactivate();
+                }
+            }
+        });        
         
 
         keyboardButtons.add(new KeyboardButton(
@@ -195,9 +241,16 @@ class App {
                 kWatchScreenBounds.x, (bounds.y+bounds.height)-100,
                 halfWatchScreenSize.x, 100 
             )
-        ){{
-            // textbox.backgroundColor = color(255,0,0,255);
-        }});
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 4;
+                    super.deactivate();
+                }
+            }
+        });
 
         keyboardButtons.add(new KeyboardButton(
             "BNM",
@@ -210,9 +263,16 @@ class App {
                 center.x, (bounds.y+bounds.height)-100,
                 halfWatchScreenSize.x, 100 
             )
-        ){{
-            // textbox.backgroundColor = color(255,0,0,255);
-        }});        
+        ){
+            public void onMouseDrag() {
+                super.activate();
+                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
+                    setState(State.SELECT_LETTER);
+                    faceID = 5;
+                    super.deactivate();
+                }
+            }
+        });        
 
     }
 
@@ -240,7 +300,7 @@ class App {
             public void activate() {
                 super.activate();
 
-                radius = 150;
+                radius = 60;
                 moveToMouse();
             
                 setState(State.KEYBOARD);
@@ -249,7 +309,7 @@ class App {
             public void deactivate() {
                 super.deactivate();
 
-                radius = 100;
+                radius = 50;
                 center.set(kWatchScreenBounds.center());
                 
                 setState(State.IDLE);
@@ -313,6 +373,8 @@ class App {
         createKeyboardButtons();
 
         createIdleButtons();
+
+        face = new Face(kWatchScreenBounds);
     }
 
     private void drawWatchGui() {
@@ -323,6 +385,9 @@ class App {
         // draw_quert();
 
         textInput.draw();
+        if (state == State.SELECT_LETTER) {
+            face.draw(faceID);
+        }
         Buttons.draw();
 
         // TODO: draw text fields
@@ -339,6 +404,7 @@ class App {
                 state = State.INIT;
                 Buttons.clear();
                 Buttons.addAll(keyboardButtons);
+                Buttons.addAll(face.buttons);
                 Buttons.add(circleButton);
                 Buttons.addAll(idleButtons);
 
@@ -348,8 +414,10 @@ class App {
 
                 state = State.IDLE;
                 circleButton.enabled = true;
+                //face.enabled = false;
                 for(Button b : idleButtons) b.enabled = true;
                 for(Button b : keyboardButtons) b.enabled = false;
+                for(Button b : face.buttons) b.enabled = false;
  
             } break;
 
@@ -357,8 +425,21 @@ class App {
                 
                 state = State.KEYBOARD;
                 circleButton.enabled = true;
+                //face.enabled = false;
                 for(Button b : idleButtons) b.enabled = false;
                 for(Button b : keyboardButtons) b.enabled = true;
+                for(Button b : face.buttons) b.enabled = false;
+
+            } break;
+
+            case SELECT_LETTER: {
+                vibrate(50);
+                state = State.SELECT_LETTER;
+                circleButton.enabled = true;
+                //face.enabled = true;
+                for(Button b : idleButtons) b.enabled = false;
+                for(Button b : keyboardButtons) b.enabled = false;
+                for(Button b : face.buttons) b.enabled = true;
 
             } break;
 
@@ -369,10 +450,28 @@ class App {
     }
 
     public void update() {
-
         if(state == State.INIT) {
             benchmarkResults.startTime = millis();
             setState(State.IDLE);
+        }
+        else if (state == State.IDLE) {
+            String result = face.checkTyped();    
+            if (result != "") {
+                switch (result) {
+                    case " ":
+                        break;
+                    case "space":
+                        textInput.addChar(' ');
+                        break;
+                    case "backspace":
+                        textInput.removeChar();
+                        break;
+                    default:
+                        textInput.addChar(result.toLowerCase().charAt(0));
+                        break;
+                }
+                setState(State.IDLE);
+            }
         }
         
         //TODO: blink cursor!
@@ -408,7 +507,9 @@ class App {
         }
 
         drawWatch();
-        phrases.draw();
+        phrases.draw("FaceID: " + String.valueOf(faceID)
+            + " State: " + String.valueOf(state)
+        );
     }
 }
 
@@ -422,6 +523,7 @@ void setup() {
     orientation(PORTRAIT);
 
     app = new App();
+    act = this.getActivity();
 }
 
 void draw() {
