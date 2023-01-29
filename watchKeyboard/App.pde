@@ -3,14 +3,47 @@
 enum State {
     INIT,
 
-    IDLE,
-    KEYBOARD,
-    SELECT_LETTER,
+    IDLE {{
+        textInputEnabled = true;
+        circleButtonEnabled = true;
+        suggestionButtonsEnabled = true;
+    }},
 
-    FINISHED,
+    KEYBOARD {{
+        circleButtonEnabled = true;
+        keyboardButtonsEnabled = true;
+    }},
+
+    FACE {{
+        circleButtonEnabled = true;
+        faceButtonsEnabled = true;
+    }},
+
+    FINISHED;
+
+    public boolean textInputEnabled         = false;
+    public boolean faceButtonsEnabled       = false;
+    public boolean circleButtonEnabled      = false;
+    public boolean keyboardButtonsEnabled   = false;
+    public boolean suggestionButtonsEnabled = false;
 };
 
 class App {
+
+    public final int   kWatchScreenSize   = 144;
+    public final float kWatchPixelScale   = kDPI/kWatchScreenSize;
+    public final float kWatchScreenPixels = kWatchPixelScale*kWatchScreenSize;
+
+    public final Rectangle kWatchScreenBounds = new Rectangle(
+        .5 * (width - kWatchScreenPixels), .5 * (height - kWatchScreenPixels),
+        kWatchScreenPixels, kWatchScreenPixels
+    );
+
+    public final float  kKeyboardDeadzoneRatio  = 0.8;
+    public final float  kKeyboardDeadzoneRadius = int(kKeyboardDeadzoneRatio * kWatchScreenBounds.width / 2);
+    public final Circle kKeyboardDeadzone       = new Circle(kWatchScreenBounds.center(), kKeyboardDeadzoneRadius); 
+
+    public Textbox textInput;
 
     private PImage watch;
     private PFont font;
@@ -18,35 +51,14 @@ class App {
     private State state;
     private Phrases phrases;
     private BenchmarkResults benchmarkResults;
-        
-    private final int kWatchScreenSize = 144;
-    private final float kWatchPixelScale = kDPI/kWatchScreenSize;
-
-    private final float deadzoneRatio = 0.8;
-    private int deadzone;
-
-
-    private final Rectangle kWatchScreenBounds;
 
     private Button circleButton;
-    private Vector<Button> keyboardButtons;
-    private Vector<Button> idleButtons;
-    private Face face;
-    private int faceID = 0;
-
-    private Textbox textInput;
+    private Vector<KeyboardButton> keyboardButtons;
+    private Vector<Button> suggestionButtons;
+    private Face currentFace;
 
     public App() {
-        
-        // Init kWatchScreenBounds
-        float watchScreenPixels = kWatchPixelScale*kWatchScreenSize;
-        kWatchScreenBounds = new Rectangle(
-            .5 * (width - watchScreenPixels), .5 * (height - watchScreenPixels),
-            watchScreenPixels, watchScreenPixels
-        );
-
-        deadzone = int(deadzoneRatio * kWatchScreenBounds.width / 2);
-
+    
         // Load font 
         font = createFont("NotoSans-Regular.ttf", 14 * displayDensity);
         textFont(font); //set the font to Noto Sans 14 pt. Creating fonts is expensive, so make difference sizes once in setup, not draw
@@ -68,8 +80,6 @@ class App {
         
         textInput = new Textbox(kWatchScreenBounds) {{
 
-            str = "";
-
             fontColor       = color(255, 255, 255, 255); //white
             backgroundColor = color(  0,   0,   0, 255); //black
 
@@ -78,44 +88,6 @@ class App {
     }
 
     private void createKeyboardButtons() {
-
-        class KeyboardButton extends TriangleButton {
-
-            public KeyboardButton(String letters, Triangle vertices, Rectangle textboxBounds) {
-
-                activeSettings = new Settings() {{
-                    fillColor = color(234,  85,  20); //orange
-                    fontColor = color(255, 255, 255); //white
-                }};
-
-                inactiveSettings = new Settings() {{
-                    fillColor = color(  0,   0,   0); //black
-                    fontColor = color( 58,  58,  58); //dark grey
-                }};
-
-                this.vertices = vertices;
-                
-                textbox = new Textbox(textboxBounds) {{
-       
-                    str = letters;
-
-                    wordwrap = true;
-                    alignment = CENTER;
-                    backgroundColor = color(0,0,0,0); //transparent
-                    
-                    setPadding(20);
-                }};
-            }
-
-            public void onMouseEnter() {
-                //activate();
-            }
-
-            public void onMouseExit() {
-                deactivate();
-            }
-
-        };
 
         float overScan = 100;        
         Rectangle bounds = new Rectangle(
@@ -126,9 +98,9 @@ class App {
         PVector halfWatchScreenSize = new PVector(.5*kWatchScreenBounds.width, .5*kWatchScreenBounds.height);
         PVector center = bounds.center();
 
-        keyboardButtons = new Vector<Button>();
+        keyboardButtons = new Vector<KeyboardButton>();
         keyboardButtons.add(new KeyboardButton(
-            "QWERT",
+            this, "QWERT",
             new Triangle(
                 bounds.x,  bounds.y,
                 center.x,  bounds.y,
@@ -137,20 +109,17 @@ class App {
             new Rectangle(
                 kWatchScreenBounds.x, kWatchScreenBounds.y,
                 halfWatchScreenSize.x, halfWatchScreenSize.y 
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 0;
-                    super.deactivate();
-                }
+            ),
+
+            new String[][] {
+                {"" , "" , "T"},
+                {"" , "" , "R"},
+                {"Q", "W", "E"},
             }
-        });
+        ));
 
         keyboardButtons.add(new KeyboardButton(
-            "YUIOP",
+            this, "YUIOP",
             new Triangle(
                 center.x,  bounds.y,
                 (bounds.x+bounds.width),  bounds.y,
@@ -159,23 +128,19 @@ class App {
             new Rectangle(
                 center.x, bounds.y,
                 halfWatchScreenSize.x, halfWatchScreenSize.y 
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 1;
-                    super.deactivate();
-                }
-            }
-        });
+            ),
 
+            new String[][] {
+                {"Y", "" , "" }, 
+                {"U", "" , "" }, 
+                {"I", "O", "P"},
+            }
+        ));
 
         // TODO: Make triangleButton use Triangle Textbox
         //       so that text wraps properly!
         keyboardButtons.add(new KeyboardButton(
-            "ASDFG",
+            this, "ASDFG",
             new Triangle(
                 center.x,  center.y,
                 bounds.x,  bounds.y,
@@ -184,20 +149,17 @@ class App {
             new Rectangle(
                 kWatchScreenBounds.x, kWatchScreenBounds.y + 150,
                 halfWatchScreenSize.x - 150, kWatchScreenBounds.height - 300 
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 2;
-                    super.deactivate();
-                }
+            ),
+
+            new String[][] {
+                {"" , "A", "S"},
+                {"" , "" , "D"},
+                {"" , "G", "F"},
             }
-        });
+        ));
 
         keyboardButtons.add(new KeyboardButton(
-            "HJKL",
+            this, "HJKL",
             new Triangle(
                 center.x,  center.y,
                 (bounds.x+bounds.width),  bounds.y,
@@ -206,21 +168,18 @@ class App {
             new Rectangle(
                 center.x + 160, kWatchScreenBounds.y + 150,
                 halfWatchScreenSize.x - 160, kWatchScreenBounds.height - 300
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 3;
-                    super.deactivate();
-                }
-            }
-        });        
+            ),
+
+            new String[][] {
+                {"H" , "J", ""}, 
+                {"BS", "" , ""}, 
+                {"K" , "L", ""},
+            }            
+        ));        
         
 
         keyboardButtons.add(new KeyboardButton(
-            "ZXCV",
+            this, "ZXCV",
             new Triangle(
                 center.x,  center.y,
                 bounds.x,  (bounds.y+bounds.height),
@@ -229,20 +188,17 @@ class App {
             new Rectangle(
                 kWatchScreenBounds.x, (bounds.y+bounds.height)-100,
                 halfWatchScreenSize.x, 100 
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 4;
-                    super.deactivate();
-                }
-            }
-        });
+            ),
+        
+            new String[][] {
+                {"" , "Z", "X"},
+                {"" , "" , "C"},
+                {"" , "" , "V"},
+            }            
+        ));
 
         keyboardButtons.add(new KeyboardButton(
-            "BNM",
+            this, "BNM",
             new Triangle(
                 center.x,  center.y,
                 center.x,  (bounds.y+bounds.height),
@@ -251,17 +207,14 @@ class App {
             new Rectangle(
                 center.x, (bounds.y+bounds.height)-100,
                 halfWatchScreenSize.x, 100 
-            )
-        ){
-            public void onMouseDrag() {
-                super.activate();
-                if (distance(mouseX, mouseY, center.x, center.y) > deadzone) {
-                    setState(State.SELECT_LETTER);
-                    faceID = 5;
-                    super.deactivate();
-                }
+            ),
+
+            new String[][] {
+                {"N" , "M", ""}, 
+                {"B" , "" , ""}, 
+                {"SP", "" , ""},
             }
-        });        
+        ));        
 
     }
 
@@ -282,14 +235,14 @@ class App {
             }
 
             protected void moveToMouse() {
-                center.x = clamp(mouseX, kWatchScreenBounds.x, kWatchScreenBounds.x + kWatchScreenBounds.width);
-                center.y = clamp(mouseY, kWatchScreenBounds.y, kWatchScreenBounds.y + kWatchScreenBounds.height);
+                bounds.x = clamp(mouseX, kWatchScreenBounds.x, kWatchScreenBounds.x + kWatchScreenBounds.width);
+                bounds.y = clamp(mouseY, kWatchScreenBounds.y, kWatchScreenBounds.y + kWatchScreenBounds.height);
             }
 
             public void activate() {
                 super.activate();
 
-                radius = 60;
+                bounds.radius = 60;
                 moveToMouse();
             
                 setState(State.KEYBOARD);
@@ -298,8 +251,8 @@ class App {
             public void deactivate() {
                 super.deactivate();
 
-                radius = 50;
-                center.set(kWatchScreenBounds.center());
+                bounds.radius = 50;
+                bounds.setCenter(kWatchScreenBounds.center());
                 
                 setState(State.IDLE);
             }
@@ -326,17 +279,17 @@ class App {
         };
     }
 
-    private void createIdleButtons() {
+    private void createSuggestionButtons() {
 
         PVector halfWatchScreenSize = new PVector(.5*kWatchScreenBounds.width, .5*kWatchScreenBounds.height);
 
-        idleButtons = new Vector<Button>();
+        suggestionButtons = new Vector<Button>();
 
         float bottomButtonWidth = kWatchScreenBounds.width / 3f; 
         float bottomBarHeight = 150; 
         float bottomBarY      = kWatchScreenBounds.y + kWatchScreenBounds.height - bottomBarHeight;
         
-        idleButtons.add(new TextInputButton(
+        suggestionButtons.add(new TextInputButton(
             "SP", 
             " ", textInput,
             new Rectangle(kWatchScreenBounds.x, bottomBarY, bottomButtonWidth, bottomBarHeight)
@@ -346,7 +299,7 @@ class App {
         // TODO: Add text suggestion button in the middle;
 
 
-        idleButtons.add(new TextInputButton(
+        suggestionButtons.add(new TextInputButton(
             "\u2190", //left arrow 
             "\b", textInput,
             new Rectangle(kWatchScreenBounds.x + 2*bottomButtonWidth, bottomBarY, bottomButtonWidth, bottomBarHeight)
@@ -361,9 +314,7 @@ class App {
 
         createKeyboardButtons();
 
-        createIdleButtons();
-
-        face = new Face(kWatchScreenBounds);
+        createSuggestionButtons();
     }
 
     private void drawWatchGui() {
@@ -373,68 +324,49 @@ class App {
         // draw_void_no_text_entry();
         // draw_quert();
 
-        textInput.draw();
-        if (state == State.SELECT_LETTER) {
-            face.draw(faceID);
+        if(state.textInputEnabled) {
+            textInput.draw();
         }
+
         Buttons.draw();
 
         // TODO: draw text fields
         // TODO: draw cursor
-
     }
 
     private void setState(State newState) {
+
+        if(newState == State.INIT) {
+            state = State.INIT;
+            
+            Buttons.clear();
+            
+            // Note: Buttons are drawn in sequential order            
+            for(KeyboardButton keyboardButton : keyboardButtons) {
+
+                Buttons.add(keyboardButton);
+
+                for(Button b : keyboardButton.face.buttons) {
+                    b.enabled = false;
+                    Buttons.add(b);
+                }
+            }
+
+            Buttons.add(circleButton);
+            Buttons.addAll(suggestionButtons);
         
-        switch(newState) {
+            return;
+        }
 
-            case INIT: {
+        state = newState;
 
-                state = State.INIT;
-                Buttons.clear();
-                Buttons.addAll(keyboardButtons);
-                Buttons.addAll(face.buttons);
-                Buttons.add(circleButton);
-                Buttons.addAll(idleButtons);
+        circleButton.enabled = state.circleButtonEnabled;
 
-            } break;
+        for(Button b : keyboardButtons) b.enabled = state.keyboardButtonsEnabled;
+        for(Button b : suggestionButtons) b.enabled = state.suggestionButtonsEnabled;
 
-            case IDLE: {
-
-                state = State.IDLE;
-                circleButton.enabled = true;
-                //face.enabled = false;
-                for(Button b : idleButtons) b.enabled = true;
-                for(Button b : keyboardButtons) b.enabled = false;
-                for(Button b : face.buttons) b.enabled = false;
- 
-            } break;
-
-            case KEYBOARD: {
-                
-                state = State.KEYBOARD;
-                circleButton.enabled = true;
-                //face.enabled = false;
-                for(Button b : idleButtons) b.enabled = false;
-                for(Button b : keyboardButtons) b.enabled = true;
-                for(Button b : face.buttons) b.enabled = false;
-
-            } break;
-
-            case SELECT_LETTER: {
-                vibrate(50);
-                state = State.SELECT_LETTER;
-                circleButton.enabled = true;
-                //face.enabled = true;
-                for(Button b : idleButtons) b.enabled = false;
-                for(Button b : keyboardButtons) b.enabled = false;
-                for(Button b : face.buttons) b.enabled = true;
-
-            } break;
-
-            default: {
-                assert(false);
-            } break;
+        if(currentFace != null) {
+            for(Button b : currentFace.buttons) b.enabled = state.faceButtonsEnabled;
         }
     }
 
@@ -443,31 +375,12 @@ class App {
             benchmarkResults.startTime = millis();
             setState(State.IDLE);
         }
-        else if (state == State.IDLE) {
-            String result = face.checkTyped();    
-            if (result != "") {
-                switch (result) {
-                    case " ":
-                        break;
-                    case "space":
-                        textInput.addChar(' ');
-                        break;
-                    case "backspace":
-                        textInput.removeChar();
-                        break;
-                    default:
-                        textInput.addChar(result.toLowerCase().charAt(0));
-                        break;
-                }
-                setState(State.IDLE);
-            }
-        }
         
         //TODO: blink cursor!
     }
 
     private void clearScreen() {
-        background(255);
+        background(0); // fill backgroung with black
     }
 
     private void drawWatch() {
@@ -496,8 +409,9 @@ class App {
         }
 
         drawWatch();
-        phrases.draw("FaceID: " + String.valueOf(faceID)
-            + " State: " + String.valueOf(state)
+        phrases.draw(
+            "DPI:   " + kDPI +
+            "State: " + String.valueOf(state)
         );
     }
 }

@@ -2,8 +2,6 @@ class Textbox extends Rectangle {
 
     // TODO: Add optional cursor?
 
-    public String str = "";
-
     public float fontSize = 14*displayDensity;
     public float lineSpacing = 0;
 
@@ -20,6 +18,8 @@ class Textbox extends Rectangle {
     public float paddingBottom = 0;
     public float paddingLeft   = 0;
     public float paddingRight  = 0;
+
+    protected String str = "";
 
     public Textbox(Rectangle r) {
         super(r.x, r.y, r.width, r.height);
@@ -123,11 +123,23 @@ class Textbox extends Rectangle {
 
     public void setString(String str) { this.str = str; }
 
-    public void addChar(char c) { str+= c; }
-
     public void removeChar() { 
         if(str.length() == 0) return;
         str = str.substring(0, str.length()-1); 
+    }
+
+    public void addChar(char c) { 
+
+        if(c == '\b') removeChar();
+        else str+= c; 
+    }
+
+    public void append(String s) {
+        
+        int sLength = s.length();
+        for(int i = 0; i < sLength; ++i) {
+            addChar(s.charAt(i));
+        }
     }
 
     public void draw() {

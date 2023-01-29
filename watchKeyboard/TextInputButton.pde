@@ -17,11 +17,7 @@ class TextInputButton extends TextboxButton {
     public void onMouseUp() {
         if(!isActive()) return;
 
-        // TODO: Replace this with loren's textbox.addChar func
-        //       after merge
-        // TODO: add excetion for backspace!
-        inputField.str+= inputText;
-
+        inputField.append(inputText);
         deactivate();
     }
 }

@@ -1,3 +1,5 @@
+import android.os.Vibrator;
+import android.content.Context;
 
 float clamp(float value, float min, float max) {
     if(value > min) return Math.min(max, value);
@@ -13,6 +15,6 @@ float distance(float x1, float y1, float x2, float y2) {
 }
 
 public void vibrate(int time) {
-    Vibrator vibrer = (Vibrator)act.getSystemService(Context.VIBRATOR_SERVICE);
+    Vibrator vibrer = (Vibrator)kActivity.getSystemService(Context.VIBRATOR_SERVICE);
     vibrer.vibrate(time);
 }
