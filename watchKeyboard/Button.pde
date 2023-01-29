@@ -9,11 +9,13 @@ abstract class Button {
     }
 
     protected Settings activeSettings = new Settings(){{
-        fillColor = color(0, 255, 0, 255);
+        fillColor = color(234,  85,  20); //orange
+        fontColor = color(255, 255, 255); //white
     }};
 
     protected Settings inactiveSettings = new Settings() {{
-        fillColor = color(255, 0, 0, 255);
+        fillColor = color(  0,   0,   0); //black
+        fontColor = color( 58,  58,  58); //dark grey
     }};
 
     protected Settings currentSettings;

@@ -9,16 +9,6 @@ class KeyboardButton extends TriangleButton {
                           Triangle vertices, Rectangle textboxBounds, 
                           String[][] faceChars) {
 
-        activeSettings = new Settings() {{
-            fillColor = color(234,  85,  20); //orange
-            fontColor = color(255, 255, 255); //white
-        }};
-
-        inactiveSettings = new Settings() {{
-            fillColor = color(  0,   0,   0); //black
-            fontColor = color( 58,  58,  58); //dark grey
-        }};
-
         this.vertices = vertices;
         
         textbox = new Textbox(textboxBounds) {{
