@@ -33,7 +33,6 @@ abstract class Button {
     public boolean enabled = true;
     protected Textbox textbox = null;
 
-
     // Initialization function called after global button is added 
     public void Init() {
 
@@ -74,6 +73,7 @@ abstract class Button {
     public void onMouseEnter() {}
     public void onMouseExit()  {}
     public void onMouseDrag()  {}
+    public void onMouseStay()  {}
 }
 
 class ButtonsClass {
@@ -157,6 +157,7 @@ void mouseDragged() {
             else b.onMouseExit();
     
         } else if(inBounds) {
+            vibrate(30);
             b.onMouseEnter();
         }
     }

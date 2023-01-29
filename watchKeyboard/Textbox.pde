@@ -121,6 +121,15 @@ class Textbox extends Rectangle {
 
     public void textAligned(String str) { textAligned(str, 0, 0); }
 
+    public void setString(String str) { this.str = str; }
+
+    public void addChar(char c) { str+= c; }
+
+    public void removeChar() { 
+        if(str.length() == 0) return;
+        str = str.substring(0, str.length()-1); 
+    }
+
     public void draw() {
 
         if(alpha(backgroundColor) != 0) {
