@@ -63,6 +63,10 @@ abstract class Button {
         currentSettings = inactiveSettings;
     }    
 
+    public boolean isActive() {
+        return currentSettings == activeSettings;
+    }
+
     public void onMouseDown() {
         activate();
     }
