@@ -8,10 +8,7 @@ class Face {
             super(keyChar, 
                   keyChar, textInput,
                   bounds
-            );
-
-            // TODO: Replace with verticleAlign Center!
-            textbox.setPadding(20);         
+            );         
         }
 
         public void onMouseEnter() {

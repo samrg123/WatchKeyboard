@@ -2,9 +2,14 @@
 class TextboxButton extends Button {
 
     public TextboxButton(Rectangle bounds, String str) {
+
         textbox = new Textbox(bounds);
+
         textbox.str = str;
+
+        textbox.wordwrap = false;
         textbox.alignment = CENTER;
+        textbox.verticalAlignment = CENTER;
     }
 
     public void setBounds(Rectangle bounds) {

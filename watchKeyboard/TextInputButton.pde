@@ -9,10 +9,10 @@ class TextInputButton extends TextboxButton {
                            Rectangle bounds) {
     
         super(bounds, buttonText);
-    
+
         this.inputText = inputText;
         this.inputField = inputField;
-}
+    }
 
     public void onMouseUp() {
         if(!isActive()) return;

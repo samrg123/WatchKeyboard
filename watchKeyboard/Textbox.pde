@@ -83,7 +83,7 @@ class Textbox extends Rectangle {
             
             case CENTER: {
                 float strWidth = textWidth(str);
-                xCoord+= (width - strWidth)/2; 
+                xCoord+= .5 * (width - strWidth); 
             } break;
 
             case RIGHT: {
@@ -100,7 +100,17 @@ class Textbox extends Rectangle {
         float yCoord = y + yOffset;
         switch(verticalAlignment) {
          
-            case CENTER: 
+
+            case CENTER: {
+                
+                // TODO: see TODO in 'BOTTOM' case
+                assert(wordwrap == false);
+
+                float strHeight = textAscent() + textDescent();
+                yCoord+= .5 * (height - strHeight);
+
+            } break;
+
             case BOTTOM: {
 
                 // TODO: implement this if we need it.
