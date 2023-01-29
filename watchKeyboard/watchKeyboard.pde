@@ -277,6 +277,33 @@ class App {
         };
     }
 
+    private void createIdleButtons() {
+
+        PVector halfWatchScreenSize = new PVector(.5*kWatchScreenBounds.width, .5*kWatchScreenBounds.height);
+
+        idleButtons = new Vector<Button>();
+
+        float bottomButtonWidth = kWatchScreenBounds.width / 3f; 
+        float bottomBarHeight = 150; 
+        float bottomBarY      = kWatchScreenBounds.y + kWatchScreenBounds.height - bottomBarHeight;
+        
+        idleButtons.add(new TextInputButton(
+            "SP", 
+            " ", textInput,
+            new Rectangle(kWatchScreenBounds.x, bottomBarY, bottomButtonWidth, bottomBarHeight)
+        ));
+
+    
+        // TODO: Add text suggestion button in the middle;
+
+
+        idleButtons.add(new TextInputButton(
+            "\u2190", //left arrow 
+            "\b", textInput,
+            new Rectangle(kWatchScreenBounds.x + 2*bottomButtonWidth, bottomBarY, bottomButtonWidth, bottomBarHeight)
+        ));
+    }
+
     private void createWatchGUI() {
 
         createTextInput();
@@ -285,8 +312,7 @@ class App {
 
         createKeyboardButtons();
 
-        //TODO: add space/backspace buttons!
-        idleButtons = new Vector<Button>();
+        createIdleButtons();
     }
 
     private void drawWatchGui() {
