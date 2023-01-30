@@ -117,7 +117,7 @@ class App {
             }
         };
 
-        startButton.inactiveSettings.fillColor = color(211, 211, 211); //light grey
+        startButton.inactiveSettings.fillColor = color(  0,   0,   0); //black
         startButton.inactiveSettings.fontColor = color(255, 255, 255); //white
     }
 
