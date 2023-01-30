@@ -560,7 +560,8 @@ class App {
                 drawWatch();
 
                 phrases.draw(
-                    "DPI:   " + Math.round(kDPI) + " | " +
+                    "DPI: "   + Math.round(kDPI) + " | " +
+                    "TIME: "  + ( int(benchmarkResults.getTotalTimeMS() / 1000) ) + " | " +
                     "State: " + String.valueOf(state)
                 );
                 
