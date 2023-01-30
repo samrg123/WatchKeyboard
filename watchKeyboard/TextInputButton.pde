@@ -13,11 +13,22 @@ class TextInputButton extends TextboxButton {
         this.inputText = inputText;
         this.inputField = inputField;
     }
+    
+    public void setInputButton(String buttonText, String inputText) {
+        textbox.str = buttonText;
+        this.inputText = inputText;
+    }
 
     public void onMouseUp() {
         if(!isActive()) return;
 
         inputField.append(inputText);
         deactivate();
+
+        if (currentSettings.wipeText) {
+            textbox.str = "";
+            inputText = "";
+        }
+
     }
 }

@@ -2,11 +2,27 @@ import java.util.Vector;
 
 class Face {
 
+    public String getDisplayChar(String key) {
+        String displayedChar = key;
+        switch (displayedChar) {
+            case " ":
+                displayedChar = UnicodeSymbol.OpenBox.getString();
+                break;
+            case "\b":
+                displayedChar = UnicodeSymbol.LeftArrow.getString();
+                break;
+            default:
+                
+                break;
+        }
+        return displayedChar;
+    }
+
     class KeyButton extends TextInputButton {
 
         public KeyButton(String keyChar, Textbox textInput, Rectangle bounds) {
-            super(keyChar, 
-                  keyChar, textInput,
+            super(getDisplayChar(keyChar),
+                  keyChar.toLowerCase(), textInput,
                   bounds
             );         
         }
@@ -17,7 +33,8 @@ class Face {
 
         public void onMouseExit() {
             deactivate();
-        }        
+        }
+
     };
 
     public Vector<Button> buttons = new Vector<Button>();

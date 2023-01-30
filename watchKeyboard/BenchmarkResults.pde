@@ -1,14 +1,41 @@
 
 class BenchmarkResults {
 
-    public float startTime;
-    public float finishTime;
+    private float startTime;
+    private float finishTime;
+    private float lastTime;
 
-    public int lettersEnteredTotal;  //a running total of the number of letters the user has entered (need this for final WPM computation)
-    public int lettersExpectedTotal; //a running total of the number of letters expected (correct phrases)
-    public int errorsTotal;          //a running total of the number of errors (when hitting next)
+    private int lettersEnteredTotal;  //a running total of the number of letters the user has entered (need this for final WPM computation)
+    private int lettersExpectedTotal; //a running total of the number of letters expected (correct phrases)
+    private int errorsTotal;          //a running total of the number of errors (when hitting next)
+    
+    public void start() {
+        startTime = millis();
+        lastTime = startTime;
+    }
 
-    public void Reset() {
+    public void stop() {
+
+        finishTime = millis();
+        System.out.println("==================");
+        System.out.println("Trials complete!"); //output
+        System.out.println("Total time taken: " + (finishTime - startTime)/1000 + "s"); //output
+        System.out.println("Total letters entered: " + lettersEnteredTotal); //output
+        System.out.println("Total letters expected: " + lettersExpectedTotal); //output
+        System.out.println("Total errors entered: " + errorsTotal); //output
+
+        float wpm = (lettersEnteredTotal/5.0f)/((finishTime - startTime)/60000f); //FYI - 60K is number of milliseconds in minute
+        float freebieErrors = lettersExpectedTotal*.05; //no penalty if errors are under 5% of chars
+        float penalty = max(errorsTotal-freebieErrors, 0) * .5f;
+
+        System.out.println("Raw WPM: " + wpm); //output
+        System.out.println("Freebie errors: " + freebieErrors); //output
+        System.out.println("Penalty: " + penalty);
+        System.out.println("WPM w/ penalty: " + (wpm-penalty)); //yes, minus, becuase higher WPM is better
+        System.out.println("==================");
+    }
+
+    public void reset() {
         startTime = 0;
         finishTime = 0;
         lettersEnteredTotal = 0;
@@ -17,7 +44,7 @@ class BenchmarkResults {
     }
 
     public BenchmarkResults() {
-        Reset();
+        reset();
     }
 
     //this computes error between two strings
@@ -42,25 +69,48 @@ class BenchmarkResults {
         return distance[phrase1.length()][phrase2.length()];
     }    
 
+    public void addResults(String typedString, String targetPhrase) {
+
+        System.out.println("==================");
+        // System.out.println("Phrase " + (currTrialNum+1) + " of " + totalTrialNum); //output
+        System.out.println("Target phrase: " + targetPhrase); //output
+        System.out.println("Phrase length: " + targetPhrase.length()); //output
+        System.out.println("User typed: " + typedString); //output
+        System.out.println("User typed length: " + typedString.length()); //output
+        System.out.println("Number of errors: " + computeLevenshteinDistance(typedString.trim(), targetPhrase.trim())); //trim whitespace and compute errors
+        System.out.println("Time taken on this trial: " + (millis()-lastTime)); //output
+        System.out.println("Time taken since beginning: " + (millis()-startTime)); //output
+        System.out.println("==================");
+
+        lettersExpectedTotal+=targetPhrase.trim().length();
+        lettersEnteredTotal+=typedString.trim().length();
+        errorsTotal+=computeLevenshteinDistance(typedString.trim(), targetPhrase.trim());
+    }
 
     public void draw() {
-        fill(0);
+        
+        fill(255);
         textAlign(CENTER);
         
-        text("Trials complete!", 400, 200); //output
-        text("Total time taken: " + (finishTime - startTime)/1000 + "s", 400, 230); //output
-        text("Total letters entered: " + lettersEnteredTotal, 400, 260); //output
-        text("Total letters expected: " + lettersExpectedTotal, 400, 290); //output
-        text("Total errors entered: " + errorsTotal, 400, 320); //output
+        float xOffset = 400;
+        float yOffset = 200;
+        float yStride = textAscent() + textDescent() + 10; 
 
-        float wpm = (lettersEnteredTotal/5.0f)/((finishTime - startTime)/60000f); //FYI - 60K is number of milliseconds in minute
-        text("Raw WPM: " + wpm, 400, 350); //output
+        text("Trials complete!", xOffset, yOffset); yOffset+= yStride; //output
+        text("Total time taken: " + (finishTime - startTime)/1000 + "s", xOffset, yOffset); yOffset+= yStride; //output
+        text("Total letters entered: " + lettersEnteredTotal, xOffset, yOffset); yOffset+= yStride; //output
+        text("Total letters expected: " + lettersExpectedTotal, xOffset, yOffset); yOffset+= yStride; //output
+        text("Total errors entered: " + errorsTotal, xOffset, yOffset); yOffset+= yStride; //output
+
+        float wpm = (lettersEnteredTotal/5.0f)/((finishTime - startTime)/60000f); yOffset+= yStride; //FYI - 60K is number of milliseconds in minute
+        text("Raw WPM: " + wpm, xOffset, yOffset); yOffset+= yStride; //output
 
         float freebieErrors = lettersExpectedTotal*.05; //no penalty if errors are under 5% of chars
-        text("Freebie errors: " + nf(freebieErrors, 1, 3), 400, 380); //output
+        text("Freebie errors: " + nf(freebieErrors, 1, 3), xOffset, yOffset); yOffset+= yStride; //output
 
         float penalty = max(errorsTotal-freebieErrors, 0) * .5f;
-        text("Penalty: " + penalty, 400, 410);
-        text("WPM w/ penalty: " + (wpm-penalty), 400, 440); //yes, minus, because higher WPM is better        
+        text("Penalty: " + penalty, xOffset, yOffset); yOffset+= yStride; 
+        text("WPM w/ penalty: " + (wpm-penalty), xOffset, yOffset); yOffset+= yStride; //yes, minus, because higher WPM is better        
     }
 }
+

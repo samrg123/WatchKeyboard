@@ -8,8 +8,12 @@ class Textbox extends Rectangle {
     public int alignment = LEFT;
     public int verticalAlignment = TOP;
 
+    public boolean enableCursor = false;
+    public String  cursorSymbol = UnicodeSymbol.VerticalBar.getString();
+
     public boolean wordwrap = true;
-    public String truncatedSymbol = "\u2026"; //ellipses
+    public String truncatedSymbol = UnicodeSymbol.Ellipses.getString();
+
 
     public color fontColor = color(0, 0, 0, 255); //black
     public color backgroundColor = color(255, 255, 255, 255); //white
@@ -34,6 +38,32 @@ class Textbox extends Rectangle {
         paddingBottom = padding;
         paddingLeft   = padding;
         paddingRight  = padding;
+    }
+
+    public void clear() {
+        str = "";
+    }
+
+    public String getContents() {
+        return str;
+    }
+
+    public String getLastWord() {
+        int strLength = str.length();
+        if(strLength == 0) return "";
+
+        int i = strLength-1;
+        for(; i >= 0; --i) {
+            if(str.charAt(i) == ' ') break;
+        }
+
+        return str.substring(i+1, strLength);
+    }
+
+    public boolean isEndWithSpace() {
+        int strLength = str.length();
+        if(strLength == 0) return false;
+        return str.charAt(strLength-1) == ' ';
     }
 
     // Returns the maximum length substring of str that is no longer than maxWidth 
@@ -162,9 +192,11 @@ class Textbox extends Rectangle {
         fill(fontColor);
         textSize(fontSize);
         textLeading(lineSpacing);
-        
+
+        String drawStr = enableCursor ? str + cursorSymbol : str;
+
         if(!wordwrap) {
-            textAligned(getTruncatedLine(str));
+            textAligned(getTruncatedLine(drawStr));
             return;
         }
 
@@ -178,11 +210,11 @@ class Textbox extends Rectangle {
         float maxHeight = height - (paddingTop + paddingBottom);
         float maxYOffset = maxHeight - yStride;
 
-        int strIndex = 0;
-        int strLength = str.length();
-        while(strIndex < strLength) {
+        int drawStrIndex = 0;
+        int drawStrLength = drawStr.length();
+        while(drawStrIndex < drawStrLength) {
 
-            String remainingStr = str.substring(strIndex);
+            String remainingStr = drawStr.substring(drawStrIndex);
 
             // Truncate last line if we run out of height
             float nextYOffset = yOffset + yStride; 
@@ -197,13 +229,13 @@ class Textbox extends Rectangle {
             if(lineLength > 0) {
 
                 textAligned(line, xOffset, yOffset);
-                strIndex+= lineLength;
+                drawStrIndex+= lineLength;
 
             } else  {
 
                 // Failed to fit even a single char 
                 textAligned(truncatedSymbol, xOffset, yOffset);
-                strIndex++;
+                drawStrIndex++;
             }
 
             yOffset+= yStride;

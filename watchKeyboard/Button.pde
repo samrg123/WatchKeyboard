@@ -6,16 +6,20 @@ abstract class Button {
     public class Settings {
         public color fillColor = color(100, 100, 100, 255); //light grey;
         public color fontColor = color(  0,   0,   0, 255); //black
+
+        public boolean vibrate = false;
+        public boolean wipeText = false;
     }
 
     protected Settings activeSettings = new Settings(){{
-        fillColor = color(234,  85,  20); //orange
-        fontColor = color(255, 255, 255); //white
+        vibrate   = true;
+        fillColor = color(234,  85,  20, 255); //orange
+        fontColor = color(255, 255, 255, 255); //white
     }};
 
     protected Settings inactiveSettings = new Settings() {{
-        fillColor = color(  0,   0,   0); //black
-        fontColor = color( 58,  58,  58); //dark grey
+        fillColor = color(  0,   0,   0, 255); //black
+        fontColor = color(211, 211, 211, 255); //light grey
     }};
 
     protected Settings currentSettings;
@@ -58,10 +62,18 @@ abstract class Button {
 
     public void activate() {
         currentSettings = activeSettings;
+        
+        if(currentSettings.vibrate) {
+            vibrate(30);
+        }
     }
 
     public void deactivate() {
         currentSettings = inactiveSettings;
+
+        if(currentSettings.vibrate) {
+            vibrate(30);
+        }
     }    
 
     public boolean isActive() {
@@ -76,8 +88,13 @@ abstract class Button {
         deactivate();
     }
 
+    public void onMouseExit() {
+        // Note: Needed when you press a button, slide your finger off it, and then release
+        deactivate();
+    }
+
+
     public void onMouseEnter() {}
-    public void onMouseExit()  {}
     public void onMouseDrag()  {}
     public void onMouseStay()  {}
 }
@@ -163,7 +180,6 @@ void mouseDragged() {
             else b.onMouseExit();
     
         } else if(inBounds) {
-            vibrate(30);
             b.onMouseEnter();
         }
     }

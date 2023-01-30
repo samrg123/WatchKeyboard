@@ -3,24 +3,33 @@
 enum State {
     INIT,
 
+    START {{
+        startButtonEnabled       = true;
+    }},
+
     IDLE {{
-        textInputEnabled = true;
-        circleButtonEnabled = true;
+        nextButtonEnabled        = true;
+        textInputEnabled         = true;
+        circleButtonEnabled      = true;
         suggestionButtonsEnabled = true;
     }},
 
     KEYBOARD {{
-        circleButtonEnabled = true;
-        keyboardButtonsEnabled = true;
+        nextButtonEnabled        = true;
+        circleButtonEnabled      = true;
+        keyboardButtonsEnabled   = true;
     }},
 
     FACE {{
-        circleButtonEnabled = true;
-        faceButtonsEnabled = true;
+        nextButtonEnabled        = true;
+        circleButtonEnabled      = true;
+        faceButtonsEnabled       = true;
     }},
 
     FINISHED;
 
+    public boolean startButtonEnabled       = false;
+    public boolean nextButtonEnabled        = false;
     public boolean textInputEnabled         = false;
     public boolean faceButtonsEnabled       = false;
     public boolean circleButtonEnabled      = false;
@@ -29,6 +38,8 @@ enum State {
 };
 
 class App {
+
+    public final int kNumPhrases = 3;
 
     public final int   kWatchScreenSize   = 144;
     public final float kWatchPixelScale   = kDPI/kWatchScreenSize;
@@ -39,9 +50,17 @@ class App {
         kWatchScreenPixels, kWatchScreenPixels
     );
 
-    public final float  kKeyboardDeadzoneRatio  = 0.8;
+    public final float  kKeyboardDeadzoneRatio  = 0.6;
     public final float  kKeyboardDeadzoneRadius = int(kKeyboardDeadzoneRatio * kWatchScreenBounds.width / 2);
     public final Circle kKeyboardDeadzone       = new Circle(kWatchScreenBounds.center(), kKeyboardDeadzoneRadius); 
+
+    public final float kNextButtonSize = 200;
+    public final float kNextButtonMargin = 100;
+    
+    public final Rectangle kNextButtonBounds = new Rectangle(
+        width - (kNextButtonSize + kNextButtonMargin), height - (kNextButtonSize + kNextButtonMargin), 
+        kNextButtonSize, kNextButtonSize
+    );
 
     public Textbox textInput;
 
@@ -52,10 +71,16 @@ class App {
     private Phrases phrases;
     private BenchmarkResults benchmarkResults;
 
+    private TextboxButton startButton;
+    private TextboxButton nextButton;
+
     private Button circleButton;
     private Vector<KeyboardButton> keyboardButtons;
     private Vector<Button> suggestionButtons;
     private Face currentFace;
+
+    private WordPredictor wordPredictor = new WordPredictor();
+    private TextInputButton predictedWordButton;
 
     public App() {
     
@@ -67,13 +92,57 @@ class App {
         // Load Images
         watch = loadImage("watchhand3smaller.png");
         // finger = loadImage("pngeggSmaller.png"); //not using this
+
+        wordPredictor.load_dictionary("word_freq.txt");
+        //wordPredictor.load_dictionary("unigram_freq.csv");
         
-        phrases = new Phrases(2);
+        phrases = new Phrases(kNumPhrases);
         benchmarkResults = new BenchmarkResults();
+
+        createStartButton();
+        createNextButton();
 
         // Init watch
         createWatchGUI();
         setState(State.INIT);
+    }
+
+    private void createStartButton() {
+        startButton = new TextboxButton(kWatchScreenBounds, "Click To Start") {
+            public void onMouseDown() {
+                super.onMouseDown();
+
+                benchmarkResults.start();
+                setState(State.IDLE);
+            }
+        };
+
+        startButton.inactiveSettings.fillColor = color(211, 211, 211); //light grey
+        startButton.inactiveSettings.fontColor = color(255, 255, 255); //white
+    }
+
+    private void createNextButton() {
+
+        nextButton = new TextboxButton(kNextButtonBounds,"Next") {
+            public void onMouseDown() {
+                super.onMouseDown();
+            
+                String targetPhrase = phrases.currentPhrase();
+                benchmarkResults.addResults(textInput.getContents(), targetPhrase);
+
+                if(phrases.nextPhrase()) {
+                    
+                    textInput.clear(); 
+                
+                } else{
+
+                    setState(State.FINISHED);
+                }
+            }
+        };
+
+        nextButton.inactiveSettings.fillColor = color( 50,  50,  50); 
+        nextButton.inactiveSettings.fontColor = color(255, 255, 255); 
     }
 
     private void createTextInput() {
@@ -85,6 +154,8 @@ class App {
 
             setPadding(20);
         }};
+
+        textInput.enableCursor = true;
     }
 
     private void createKeyboardButtons() {
@@ -172,7 +243,7 @@ class App {
 
             new String[][] {
                 {"H", "J", ""}, 
-                {"" , "" , ""}, 
+                {"\b" , "" , ""}, 
                 {"K", "L", ""},
             }            
         ));        
@@ -212,7 +283,7 @@ class App {
             new String[][] {
                 {"N" , "M", ""}, 
                 {"B" , "" , ""}, 
-                {""  , "" , ""},
+                {" "  , "" , ""},
             }
         ));        
 
@@ -226,6 +297,7 @@ class App {
         circleButton = new CircleButton() {
             {    
                 activeSettings = new Settings(){{
+                    vibrate   = true;
                     fillColor = color( 46, 167, 224, .5*255); //transparent blue
                 }};
 
@@ -258,6 +330,7 @@ class App {
             }
 
             public void onMouseEnter() {
+                vibrate(50);
                 activate();
             }
 
@@ -286,24 +359,53 @@ class App {
         suggestionButtons = new Vector<Button>();
 
         float bottomButtonWidth = kWatchScreenBounds.width / 3f; 
-        float bottomBarHeight = 150; 
-        float bottomBarY      = kWatchScreenBounds.y + kWatchScreenBounds.height - bottomBarHeight;
+        float bottomButtonHeight = 150; 
+        float bottomBarY      = kWatchScreenBounds.y + kWatchScreenBounds.height - bottomButtonHeight;
+        float bottomButtonY   = bottomBarY - bottomButtonHeight;
         
         suggestionButtons.add(new TextInputButton(
-            "SP", 
+            UnicodeSymbol.OpenBox.getString(),
             " ", textInput,
-            new Rectangle(kWatchScreenBounds.x, bottomBarY, bottomButtonWidth, bottomBarHeight)
-        ));
+            new Rectangle(kWatchScreenBounds.x, bottomButtonY, bottomButtonWidth, bottomButtonHeight)
+        ){
+            public void onMouseUp() {
+                super.onMouseUp();
+                setState(State.IDLE);
+            }
+        });
 
-    
-        // TODO: Add text suggestion button in the middle;
+        predictedWordButton = new TextInputButton(
+            "", 
+            "", textInput,
+            new Rectangle(kWatchScreenBounds.x, bottomBarY, kWatchScreenBounds.width, bottomButtonHeight)
+        ) {
+            {    
+                activeSettings = new Settings(){{
+                    vibrate   = true;
+                    fillColor = color(234,  85,  20); //orange
+                    fontColor = color(255, 255, 255); //white
+                }};
 
+                inactiveSettings = new Settings() {{
+                    fillColor = color(  0,   0,   0); //black
+                    fontColor = color(211, 211, 211); //light grey
+                    wipeText = true;
+                }};
+            }
+        };
+
+        suggestionButtons.add(predictedWordButton);
 
         suggestionButtons.add(new TextInputButton(
-            "\u2190", //left arrow 
+            UnicodeSymbol.LeftArrow.getString(), 
             "\b", textInput,
-            new Rectangle(kWatchScreenBounds.x + 2*bottomButtonWidth, bottomBarY, bottomButtonWidth, bottomBarHeight)
-        ));
+            new Rectangle(kWatchScreenBounds.x + 2*bottomButtonWidth, bottomButtonY, bottomButtonWidth, bottomButtonHeight)
+        ){
+            public void onMouseUp() {
+                super.onMouseUp();
+                setState(State.IDLE);
+            }
+        });
     }
 
     private void createWatchGUI() {
@@ -317,6 +419,14 @@ class App {
         createSuggestionButtons();
     }
 
+    public void drawDeadzoneCircle() {
+        stroke(255, 255, 255);
+        strokeWeight(10);
+        noFill();
+        circle(kKeyboardDeadzone.x, kKeyboardDeadzone.y, kKeyboardDeadzone.radius * 2);
+        noStroke();
+    }
+
     private void drawWatchGui() {
 
         // draw2x3();
@@ -328,6 +438,10 @@ class App {
             textInput.draw();
         }
 
+        if (state == State.KEYBOARD) {
+            drawDeadzoneCircle();
+        }
+
         Buttons.draw();
 
         // TODO: draw text fields
@@ -336,29 +450,63 @@ class App {
 
     private void setState(State newState) {
 
-        if(newState == State.INIT) {
-            state = State.INIT;
-            
-            Buttons.clear();
-            
-            // Note: Buttons are drawn in sequential order            
-            for(KeyboardButton keyboardButton : keyboardButtons) {
+        state = newState;
 
-                Buttons.add(keyboardButton);
+        switch(newState) {
 
-                for(Button b : keyboardButton.face.buttons) {
-                    b.enabled = false;
-                    Buttons.add(b);
+            case INIT: {
+
+                Buttons.clear();
+                
+                // Note: Buttons are drawn in sequential order            
+                
+                Buttons.add(startButton);                
+                Buttons.add(nextButton);
+                
+                for(KeyboardButton keyboardButton : keyboardButtons) {
+
+                    Buttons.add(keyboardButton);
+
+                    for(Button b : keyboardButton.face.buttons) {
+                        b.enabled = false;
+                        Buttons.add(b);
+                    }
                 }
+
+                Buttons.add(circleButton);
+                Buttons.addAll(suggestionButtons);
+            
+
+                // TODO: this is kinda hacky, but adding the circle button deactivates it
+                //       and sets state to IDLE, so we override that behvior here. Clean this up!
+                setState(State.START);
+                return;
             }
 
-            Buttons.add(circleButton);
-            Buttons.addAll(suggestionButtons);
-        
-            return;
+            case IDLE: {
+                String lastWord = textInput.getLastWord();
+                String predictedWord = wordPredictor.predict(lastWord);
+                if (textInput.isEndWithSpace()) {
+                    predictedWordButton.setInputButton("", "");
+                }
+                else if (lastWord == "") {
+                    predictedWordButton.setInputButton(predictedWord, predictedWord);
+                }
+                else {
+                    predictedWordButton.setInputButton(predictedWord, predictedWord.substring(lastWord.length(), predictedWord.length()) + " ");
+                }
+
+            } break;
+
+            case FINISHED: {
+                
+                benchmarkResults.stop();
+
+            } break;
         }
 
-        state = newState;
+        nextButton.enabled = state.nextButtonEnabled;
+        startButton.enabled = state.startButtonEnabled;
 
         circleButton.enabled = state.circleButtonEnabled;
 
@@ -371,11 +519,6 @@ class App {
     }
 
     public void update() {
-        if(state == State.INIT) {
-            benchmarkResults.startTime = millis();
-            setState(State.IDLE);
-        }
-        
         //TODO: blink cursor!
     }
 
@@ -403,17 +546,25 @@ class App {
 
         clearScreen();
 
-        if(state == State.FINISHED) {
-            benchmarkResults.draw();
-            return;
+        switch(state) {
+
+            // TODO: Add restart button!
+            case FINISHED: {
+
+                benchmarkResults.draw();
+
+            } break;
+
+            default: {
+
+                drawWatch();
+
+                phrases.draw(
+                    "DPI:   " + Math.round(kDPI) + " | " +
+                    "State: " + String.valueOf(state)
+                );
+                
+            }
         }
-
-        textLeading(50);
-
-        drawWatch();
-        phrases.draw(
-            "DPI:   " + Math.round(kDPI) + " | " +
-            "State: " + String.valueOf(state)
-        );
     }
 }
