@@ -8,7 +8,13 @@ class BenchmarkResults {
     private int lettersEnteredTotal;  //a running total of the number of letters the user has entered (need this for final WPM computation)
     private int lettersExpectedTotal; //a running total of the number of letters expected (correct phrases)
     private int errorsTotal;          //a running total of the number of errors (when hitting next)
-    
+
+
+    public float getTotalTimeMS() {
+        if(startTime == 0) return 0;
+        return millis() - startTime;
+    }
+
     public void start() {
         startTime = millis();
         lastTime = startTime;
@@ -85,6 +91,8 @@ class BenchmarkResults {
         lettersExpectedTotal+=targetPhrase.trim().length();
         lettersEnteredTotal+=typedString.trim().length();
         errorsTotal+=computeLevenshteinDistance(typedString.trim(), targetPhrase.trim());
+
+        lastTime = millis();
     }
 
     public void draw() {
