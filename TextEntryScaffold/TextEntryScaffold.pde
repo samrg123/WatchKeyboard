@@ -35,7 +35,7 @@ void setup()
   orientation(LANDSCAPE); //can also be PORTRAIT - sets orientation on android device
   size(1920, 1080); //Sets the size of the app. You should modify this to your device's native size. Many phones today are 1080 wide by 1920 tall.
   // fullScreen(); //Alternatively, set the size to fullscreen.
-  font = createFont("NotoSans-Regular.ttf", 14 * 403);
+  font = createFont("NotoSans-Regular.ttf", 14 * displayDensity);
   textFont(font); //set the font to Noto Sans 14 pt. Creating fonts is expensive, so make difference sizes once in setup, not draw
   noStroke(); //my code doesn't use any strokes
 }
